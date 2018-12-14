@@ -1,11 +1,11 @@
 provider "aws" {
-  access_key = ""
-  secret_key = ""
+  access_key = "${var.v-access-key}"
+  secret_key = "${var.v-secret-key}"
   region     = "eu-central-1"
 }
 
 resource "aws_vpc" "dof-vps" {
-  cidr_block           = "10.10.0.0/16"
+  cidr_block           = "${var.dof-cidr-block}"
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -36,7 +36,7 @@ resource "aws_route_table" "dof-route" {
 }
 
 resource "aws_subnet" "dof-snet" {
-  count                   = 2
+  count                   = "${var.v-count}"
   vpc_id                  = "${aws_vpc.dof-vps.id}"
   cidr_block              = "${var.dof-cidr[count.index]}"
   map_public_ip_on_launch = true
@@ -48,7 +48,7 @@ resource "aws_subnet" "dof-snet" {
 }
 
 resource "aws_route_table_association" "dof-route-assoc" {
-  count          = 2
+  count          = "${var.v-count}"
   subnet_id      = "${aws_subnet.dof-snet.*.id[count.index]}"
   route_table_id = "${aws_route_table.dof-route.id}"
 }
@@ -81,49 +81,40 @@ resource "aws_security_group" "dof-pub-sg" {
 }
 
 resource "aws_instance" "dof-server" {
-  count                  = 2
-  ami                    = "ami-dd3c0f36"
-  instance_type          = "t2.micro"
-  key_name               = "terraform-key"
+  count                  = "${var.v-count}"
+  ami                    = "${var.v-ami-image}"
+  instance_type          = "${var.v-instance-type}"
+  key_name               = "${var.v-instance-key}"
   vpc_security_group_ids = ["${aws_security_group.dof-pub-sg.id}"]
   subnet_id              = "${element(aws_subnet.dof-snet.*.id, count.index)}"
 
   tags = {
     name = "dof-server-${count.index + 1}"
   }
-}
 
-output "public_ip" {
-  value = "${aws_instance.dof-server.*.public_ip}"
+  provisioner "file" {
+    source      = "./provision.sh"
+    destination = "/tmp/provision.sh"
+
+    connection = {
+      type        = "ssh"
+      user        = "centos"
+      private_key = "${file("./terraform-key.pem")}"
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/provision.sh",
+      "/tmp/provision.sh",
+    ]
+
+    connection = {
+      type        = "ssh"
+      user        = "centos"
+      private_key = "${file("./terraform-key.pem")}"
+    }
+  }
 }
 
 data "aws_availability_zones" "dof-avz" {}
-
-variable "dof-cidr" {
-  type    = "list"
-  default = ["10.10.10.0/24", "10.10.11.0/24"]
-}
-
-provisioner "file" {
-  source      = "./provision.sh"
-  destination = "/tmp/provision.sh"
-
-  connection = {
-    type        = "ssh"
-    user        = "centos"
-    private_key = "${file("/c/Users//Downloads/terraform-key.pem")}"
-  }
-}
-
-provisioner "remote-exec" {
-  inline = [
-    "chmod +x /tmp/provision.sh",
-    "/tmp/provision.sh",
-  ]
-
-  connection = {
-    type        = "ssh"
-    user        = "centos"
-    private_key = "${file("/c/Users//Downloads/terraform-key.pem")}"
-  }
-}
