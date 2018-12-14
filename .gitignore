@@ -1,2 +1,14 @@
 M1/M1-3/terraform-key.pem
 M1/M1-3/terraform.tfvars
+M1/M1-2/terraform.tfstate
+M1/M1-1/terraform.tfstate
+M1/M1-1/terraform.tfstate.backup
+M1/M1-1/.terraform/plugins/darwin_amd64/lock.json
+M1/M1-1/.terraform/plugins/darwin_amd64/terraform-provider-aws_v1.51.0_x4
+M1/M1-2/terraform.tfstate.backup
+M1/M1-2/.terraform/plugins/darwin_amd64/lock.json
+M1/M1-2/.terraform/plugins/darwin_amd64/terraform-provider-docker_v1.1.0_x4
+M1/M1-3/terraform.tfstate
+M1/M1-3/terraform.tfstate.backup
+M1/M1-3/.terraform/plugins/darwin_amd64/lock.json
+M1/M1-3/.terraform/plugins/darwin_amd64/terraform-provider-aws_v1.52.0_x4
