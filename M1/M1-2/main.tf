@@ -1,3 +1,6 @@
+provider "docker" {
+  host = "tcp://192.168.99.100:2376/"
+}
 module "image" {
   source = "./image"
   v_image = "${var.v_image}"
